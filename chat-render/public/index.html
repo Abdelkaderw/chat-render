@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Chat</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+}
+
+#login, #chat {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    background: #1e293b;
+    padding: 20px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 400px;
+}
+
+#messages {
+    height: 60vh;
+    overflow-y: auto;
+}
+
+.msg {
+    margin: 5px 0;
+}
+
+.username {
+    color: #38bdf8;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    margin-top: 10px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div id="login">
+    <div class="container">
+        <h2>Pseudo</h2>
+        <input id="pseudo" placeholder="Entre ton pseudo">
+        <button onclick="enterChat()">Entrer</button>
+    </div>
+</div>
+
+<div id="chat" style="display:none;">
+    <div class="container">
+        <div id="messages"></div>
+        <input id="message" placeholder="Message..." onkeypress="handleKey(event)">
+    </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+const socket = io();
+let pseudo = "";
+
+function enterChat() {
+    pseudo = document.getElementById("pseudo").value;
+    if (!pseudo) return alert("Entre un pseudo");
+
+    document.getElementById("login").style.display = "none";
+    document.getElementById("chat").style.display = "flex";
+}
+
+function handleKey(e) {
+    if (e.key === "Enter") sendMessage();
+}
+
+function sendMessage() {
+    let msg = document.getElementById("message").value;
+    if (!msg) return;
+
+    socket.emit("chat message", { pseudo, msg });
+    document.getElementById("message").value = "";
+}
+
+socket.on("chat message", (data) => {
+    const div = document.createElement("div");
+    div.classList.add("msg");
+    div.innerHTML = `<span class="username">${data.pseudo}:</span> ${data.msg}`;
+    document.getElementById("messages").appendChild(div);
+});
+</script>
+
+</body>
+</html>
